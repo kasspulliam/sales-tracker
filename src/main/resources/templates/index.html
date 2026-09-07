@@ -223,7 +223,8 @@ to @PostMapping("/add") in ProductController.
   -->
   <div
           class="product-card"
-          th:each="product : ${products}">
+          th:each="product : ${products}"
+          th:id="'product-' + ${product.id}">
 
 
     <!-- ======================= -->
