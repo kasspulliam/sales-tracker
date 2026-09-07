@@ -497,77 +497,37 @@ to @PostMapping("/add") in ProductController.
 </div>
 
   <script>
-
-    /*
-     * Finds every + and - sales form on the page.
-     */
     const saleForms = document.querySelectorAll(".sale-form");
 
-
-    /*
-     * Add special behavior to each form.
-     */
     saleForms.forEach(form => {
+        form.addEventListener("submit", function(event) {
 
-        form.addEventListener("submit", async function(event) {
-
-            /*
-             * Normally submitting a form reloads the page.
-             *
-             * preventDefault() stops that from happening.
-             */
+            // Stop the normal form submission for a moment.
             event.preventDefault();
 
-
-            /*
-             * Send the POST request to our Spring controller
-             * without refreshing the browser.
-             */
-            await fetch(form.action, {
-                method: "POST"
-            });
-
-
-            /*
-             * Reload the current page information after the sale
-             * while trying to keep our current scroll position.
-             */
-            const scrollPosition = window.scrollY;
-
-            window.location.reload();
-
+            // Save where the user currently is on the page.
             sessionStorage.setItem(
                 "scrollPosition",
-                scrollPosition
+                window.scrollY
             );
 
+            // Now submit the form normally.
+            form.submit();
         });
-
     });
 
-
-    /*
-     * After the page reloads, check whether we saved
-     * a previous scroll position.
-     */
+    // After the page reloads, return to the saved spot.
     const savedPosition =
         sessionStorage.getItem("scrollPosition");
 
-
     if (savedPosition !== null) {
-
         window.scrollTo(
             0,
             parseInt(savedPosition)
         );
 
-        /*
-         * Remove it afterward so it doesn't affect
-         * normal page loads later.
-         */
         sessionStorage.removeItem("scrollPosition");
     }
-
 </script>
 
 
