@@ -122,7 +122,7 @@ public class ProductController {
 
 
         // Reloads the main page.
-        return "redirect:/";
+        return "redirect:/#product-" + id;
     }
 
 
@@ -147,7 +147,7 @@ public class ProductController {
 
 
         // Reloads the page.
-        return "redirect:/";
+        return "redirect:/#product-" + id;
     }
 
 
