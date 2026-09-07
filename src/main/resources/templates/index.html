@@ -496,40 +496,6 @@ to @PostMapping("/add") in ProductController.
 
 </div>
 
-  <script>
-    const saleForms = document.querySelectorAll(".sale-form");
-
-    saleForms.forEach(form => {
-        form.addEventListener("submit", function(event) {
-
-            // Stop the normal form submission for a moment.
-            event.preventDefault();
-
-            // Save where the user currently is on the page.
-            sessionStorage.setItem(
-                "scrollPosition",
-                window.scrollY
-            );
-
-            // Now submit the form normally.
-            form.submit();
-        });
-    });
-
-    // After the page reloads, return to the saved spot.
-    const savedPosition =
-        sessionStorage.getItem("scrollPosition");
-
-    if (savedPosition !== null) {
-        window.scrollTo(
-            0,
-            parseInt(savedPosition)
-        );
-
-        sessionStorage.removeItem("scrollPosition");
-    }
-</script>
-
 
 </body>
 
