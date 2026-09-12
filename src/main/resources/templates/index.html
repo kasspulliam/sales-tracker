@@ -164,13 +164,37 @@ from our Java Product objects.
 <!-- ======================= -->
 <!-- ADD PRODUCT -->
 <!-- ======================= -->
+  
 
 <h2>Add Product</h2>
+
+<div class="add-options">
+
+    <button
+          class="normal-button"
+          type="button"
+          onclick="showManualForm()">
+  
+      Add Manually
+  
+  </button>
+  
+  <button
+          class="normal-button"
+          type="button"
+          onclick="showExcelForm()">
+  
+      Import Excel
+  
+  </button>
+
+</div>
 
 <!--
 When submitted, this sends the information
 to @PostMapping("/add") in ProductController.
 -->
+<div id="manual-form">
 <form action="/add" method="post" enctype="multipart/form-data">
 
   <input
@@ -201,6 +225,39 @@ to @PostMapping("/add") in ProductController.
 
 </form>
 
+
+</div>
+
+<div id="excel-form" style="display: none;">
+
+  <h3>Import Products from Excel</h3>
+
+  <p>
+    Column A: Product Name<br>
+    Column B: Price
+  </p>
+
+  <form action="/import"
+        method="post"
+        enctype="multipart/form-data">
+
+    <input
+            type="file"
+            name="file"
+            accept=".xlsx"
+            required>
+
+    <button
+            class="normal-button"
+            type="submit">
+
+      Import Products
+
+    </button>
+
+  </form>
+
+</div>
 
 <hr>
 
@@ -496,6 +553,31 @@ to @PostMapping("/add") in ProductController.
 
 
 </div>
+
+
+
+<script>
+
+  function showManualForm() {
+
+    document.getElementById("manual-form")
+            .style.display = "block";
+
+    document.getElementById("excel-form")
+            .style.display = "none";
+  }
+
+
+  function showExcelForm() {
+
+    document.getElementById("manual-form")
+            .style.display = "none";
+
+    document.getElementById("excel-form")
+            .style.display = "block";
+  }
+
+</script>
 
 
 </body>
