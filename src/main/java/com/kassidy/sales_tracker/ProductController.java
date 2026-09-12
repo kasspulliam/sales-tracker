@@ -1,5 +1,12 @@
 package com.kassidy.sales_tracker;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -108,6 +115,122 @@ public class ProductController {
         // Save the Product object to the database.
         productRepository.save(product);
 
+        return "redirect:/";
+    }
+
+    // Imports multiple products from an Excel spreadsheet.
+    //
+    // Spreadsheet format:
+    // Column A = Product Name
+    // Column B = Price
+    //
+    // Row 1 should contain headings.
+    @PostMapping("/import")
+    public String importProducts(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) throws IOException {
+    
+        // Get this browser's workspace.
+        String workspaceId =
+                (String) session.getAttribute("workspaceId");
+    
+        // If the workspace does not exist yet,
+        // create one.
+        if (workspaceId == null) {
+    
+            workspaceId =
+                    java.util.UUID.randomUUID().toString();
+    
+            session.setAttribute(
+                    "workspaceId",
+                    workspaceId
+            );
+        }
+    
+        // Open the Excel file.
+        try (Workbook workbook =
+                     new XSSFWorkbook(file.getInputStream())) {
+    
+            // Get the first sheet.
+            Sheet sheet = workbook.getSheetAt(0);
+    
+            // Go through every row in the spreadsheet.
+            for (Row row : sheet) {
+    
+                // Skip the first row because it contains headings.
+                if (row.getRowNum() == 0) {
+                    continue;
+                }
+    
+                // Get column A and column B.
+                Cell nameCell = row.getCell(0);
+                Cell priceCell = row.getCell(1);
+    
+                // Skip rows that are missing a name or price.
+                if (nameCell == null || priceCell == null) {
+                    continue;
+                }
+    
+                String name;
+    
+                // Read the product name.
+                if (nameCell.getCellType() == CellType.STRING) {
+    
+                    name = nameCell
+                            .getStringCellValue()
+                            .trim();
+    
+                } else {
+    
+                    name = nameCell
+                            .toString()
+                            .trim();
+                }
+    
+                // Skip rows with no product name.
+                if (name.isEmpty()) {
+                    continue;
+                }
+    
+                double price;
+    
+                // If Excel recognizes the price as a number,
+                // read it normally.
+                if (priceCell.getCellType() == CellType.NUMERIC) {
+    
+                    price =
+                            priceCell.getNumericCellValue();
+    
+                } else {
+    
+                    // If the price is stored as text,
+                    // remove the dollar sign and commas.
+                    String priceText =
+                            priceCell
+                                    .toString()
+                                    .replace("$", "")
+                                    .replace(",", "")
+                                    .trim();
+    
+                    // Convert the text into a number.
+                    price =
+                            Double.parseDouble(priceText);
+                }
+    
+                // Create the new product.
+                Product product =
+                        new Product(name, price);
+    
+                // Make sure the product belongs
+                // to the person who uploaded the spreadsheet.
+                product.setWorkspaceId(workspaceId);
+    
+                // Save the product.
+                productRepository.save(product);
+            }
+        }
+    
+        // Return to the sales tracker.
         return "redirect:/";
     }
 
