@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import jakarta.servlet.http.HttpSession;
 //controller tells spring that this class handles requests coming from website
 import org.springframework.stereotype.Controller;
 //Model allows us to send Java data to the HTML page
@@ -28,37 +29,53 @@ public class ProductController {
 
     //@getmapping means when someone visits the https page it runs this method
     @GetMapping("/")
-    public String home(Model model){
-        //gets every product currently stored in the database
-        List<Product> products = productRepository.findAll();
-        //these vars will store the totals for the entire store
+    public String home(Model model, HttpSession session){
+    
+        String workspaceId = (String) session.getAttribute("workspaceId");
+    
+        if (workspaceId == null) {
+            workspaceId = java.util.UUID.randomUUID().toString();
+            session.setAttribute("workspaceId", workspaceId);
+        }
+    
+        List<Product> products =
+                productRepository.findByWorkspaceIdOrderByNameAsc(workspaceId);
+    
         int totalItemsSold = 0;
         double totalRevenue = 0;
-
-        //loop through ever products in our list
+    
         for(Product product : products){
             totalItemsSold += product.getSoldCount();
             totalRevenue += product.getRevenue();
         }
-
-        //these lines send java info to index.html. the html page can now access the list of products
+    
         model.addAttribute("products", products);
         model.addAttribute("totalItemsSold", totalItemsSold);
         model.addAttribute("totalRevenue", totalRevenue);
-
+    
         return "index";
     }
 
     //This method runs when the user submits
+    
     // the "Add Product" form.
     @PostMapping("/add")
     public String addProduct(@RequestParam String name,
                              @RequestParam double price,
-                             @RequestParam(value = "image", required = false) MultipartFile image)
+                             @RequestParam(value = "image", required = false) MultipartFile image,
+                             HttpSession session)
             throws IOException {
 
         // Create the new Product object.
         Product product = new Product(name, price);
+        String workspaceId = (String) session.getAttribute("workspaceId");
+        if (workspaceId == null) {
+            workspaceId = java.util.UUID.randomUUID().toString();
+            
+            session.setAttribute("workspaceId", workspaceId);
+        }
+
+        product.setWorkspaceId(workspaceId);
 
         // Check whether the user actually selected an image.
         if (image != null && !image.isEmpty()) {
@@ -102,26 +119,21 @@ public class ProductController {
     // {id} represents the ID of whichever product
     // was clicked.
     @PostMapping("/plus/{id}")
-    public String addSale(@PathVariable Long id) {
+    public String addSale(@PathVariable Long id, HttpSession session) {
 
-
-        // Searches the database for the Product
-        // that has this specific ID.
+        String workspaceId = (String) session.getAttribute("workspaceId");
+    
         Product product =
                 productRepository.findById(id).orElseThrow();
-
-
-        // Calls the addSale() method from Product.java.
-        //
-        // quantitySold increases by 1.
-        product.addSale();
-
-
-        // Saves the updated Product back into the database.
-        productRepository.save(product);
-
-
-        // Reloads the main page.
+    
+        // Only change the product if it belongs to this workspace.
+        if (workspaceId != null &&
+                workspaceId.equals(product.getWorkspaceId())) {
+    
+            product.addSale();
+            productRepository.save(product);
+        }
+    
         return "redirect:/#product-" + id;
     }
 
@@ -130,75 +142,68 @@ public class ProductController {
     // This method runs when the user presses
     // the - button for a product.
     @PostMapping("/minus/{id}")
-    public String removeSale(@PathVariable Long id) {
-
-
-        // Finds the correct Product using its ID.
+    public String removeSale(@PathVariable Long id, HttpSession session) {
+    
+        String workspaceId = (String) session.getAttribute("workspaceId");
+    
         Product product =
                 productRepository.findById(id).orElseThrow();
-
-
-        // Calls removeSale() from Product.java.
-        product.removeSale();
-
-
-        // Saves the updated quantity to the database.
-        productRepository.save(product);
-
-
-        // Reloads the page.
+    
+        if (workspaceId != null &&
+                workspaceId.equals(product.getWorkspaceId())) {
+    
+            product.removeSale();
+            productRepository.save(product);
+        }
+    
         return "redirect:/#product-" + id;
     }
-
 
 
     // This method runs when the user edits a product.
     @PostMapping("/edit/{id}")
     public String editProduct(
-
-            // Gets the ID of the product being edited.
             @PathVariable Long id,
-
-            // Gets the new name from the HTML form.
             @RequestParam String name,
-
-            // Gets the new price from the HTML form.
-            @RequestParam double price) {
-
-
-        // Finds the existing Product in the database.
+            @RequestParam double price,
+            HttpSession session) {
+    
+        String workspaceId = (String) session.getAttribute("workspaceId");
+    
         Product product =
                 productRepository.findById(id).orElseThrow();
-
-
-        // Uses setter methods from Product.java
-        // to change the object's information.
-        product.setName(name);
-        product.setPrice(price);
-
-
-        // Saves the edited Product back into the database.
-        productRepository.save(product);
-
-
-        // Reloads the main page.
+    
+        if (workspaceId != null &&
+                workspaceId.equals(product.getWorkspaceId())) {
+    
+            product.setName(name);
+            product.setPrice(price);
+    
+            productRepository.save(product);
+        }
+    
         return "redirect:/";
     }
-
 
 
     // This method runs when the user presses
     // "Delete Product".
     @PostMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable Long id) {
-
-
-        // Deletes the Product with this ID
-        // from the database.
-        productRepository.deleteById(id);
-
-
-        // Reloads the main page.
+    public String deleteProduct(
+            @PathVariable Long id,
+            HttpSession session) {
+    
+        String workspaceId = (String) session.getAttribute("workspaceId");
+    
+        Product product =
+                productRepository.findById(id).orElseThrow();
+    
+        if (workspaceId != null &&
+                workspaceId.equals(product.getWorkspaceId())) {
+    
+            productRepository.delete(product);
+        }
+    
         return "redirect:/";
     }
 }
