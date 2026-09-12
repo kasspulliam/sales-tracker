@@ -31,6 +31,9 @@ public class Product {
 
     private String imageUrl;
 
+    //seperate workspaces
+    private String workspaceId;
+
     public String getImageUrl(){
         return imageUrl;
     }
@@ -54,6 +57,14 @@ public class Product {
         // Every new product starts with zero sales.
         this.soldCount = 0;
     }
+
+    //getter and setter for workspaceId
+    public String getWorkspaceId(){
+        return workspaceId;
+    }
+    public void setWorkspaceId(String workspaceId){
+        this.workspaceId= workspaceId;
+    }    
 
     // Getter for the product ID.
     public Long getId() {
