@@ -9,9 +9,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-        // When the browser asks for /uploads/filename,
-        // Spring looks inside the local uploads folder.
         registry
                 .addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
