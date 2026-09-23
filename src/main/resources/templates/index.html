@@ -1,51 +1,30 @@
 <!DOCTYPE html>
 
-<!--
-Thymeleaf lets this HTML page display information
-from our Java Product objects.
--->
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
   <meta charset="UTF-8">
-
-  <!-- Makes the website size correctly on an iPhone/iPad -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Sales Tracker</title>
-
-  <!--
-  Basic styling for now.
-  We are making everything large and easy to tap/read.
-  -->
+  
   <style>
-
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
       background-color: #f5f5f5;
     }
-
     h1 {
       font-size: 36px;
       text-align: center;
     }
-
     h2 {
       font-size: 28px;
     }
 
-    /* Area containing all of the products */
     .product-container {
       display: grid;
-
-      /* Automatically fits cards based on screen size */
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-
       gap: 20px;
     }
-
-    /* Each individual product */
     .product-card {
       background-color: white;
       border: 2px solid #ccc;
@@ -53,63 +32,49 @@ from our Java Product objects.
       padding: 20px;
       text-align: center;
     }
-
-    /* Product picture */
     .product-image {
       width: 100%;
       max-width: 250px;
       height: 200px;
-
-      /* Keeps pictures from looking stretched */
       object-fit: cover;
-
       border-radius: 12px;
     }
-
-    /* Product name */
     .product-name {
       font-size: 30px;
       margin-bottom: 5px;
     }
-
-    /* Product price */
     .product-price {
       font-size: 26px;
       font-weight: bold;
     }
 
-    /* + and - buttons */
+
+    
     .sale-button {
       font-size: 40px;
       font-weight: bold;
-
       width: 80px;
       height: 70px;
-
       margin: 10px;
-
       cursor: pointer;
     }
-
-    /* Number in between + and - */
     .sold-count {
       font-size: 36px;
       font-weight: bold;
       margin: 0 15px;
     }
 
-    /* Revenue underneath each product */
+
+    
     .product-revenue {
       font-size: 22px;
     }
 
-    /* Forms used to add/edit products */
     input {
       font-size: 20px;
       padding: 12px;
       margin: 5px;
     }
-
     .normal-button {
       font-size: 20px;
       padding: 12px 18px;
@@ -117,253 +82,134 @@ from our Java Product objects.
       cursor: pointer;
     }
 
-    /* Makes Edit Product easier to see */
+
+    
     summary {
       font-size: 20px;
       cursor: pointer;
       margin-top: 15px;
     }
-
-    /* Totals section at bottom */
     .totals {
       background-color: white;
       border: 3px solid #333;
       border-radius: 15px;
-
       padding: 20px;
       margin-top: 30px;
     }
-
-    /* Individual product breakdown */
     .individual-total {
       font-size: 20px;
     }
-
-    /* BIG overall totals */
     .grand-total {
       font-size: 28px;
       font-weight: bold;
     }
 
   </style>
-
 </head>
-
-
 <body>
-
-
-<!-- ======================= -->
-<!-- PAGE TITLE -->
-<!-- ======================= -->
-
 <h1>Sales Tracker</h1>
-
-
-
-<!-- ======================= -->
-<!-- ADD PRODUCT -->
-<!-- ======================= -->
-  
-
 <h2>Add Product</h2>
-
 <div class="add-options">
-
     <button
           class="normal-button"
           type="button"
           onclick="showManualForm()">
-  
       Add Manually
-  
   </button>
-  
   <button
           class="normal-button"
           type="button"
           onclick="showExcelForm()">
-  
       Import Excel
-  
   </button>
 
 </div>
 
-<!--
-When submitted, this sends the information
-to @PostMapping("/add") in ProductController.
--->
 <div id="manual-form">
 <form action="/add" method="post" enctype="multipart/form-data">
-
   <input
           type="text"
           name="name"
           placeholder="Product Name"
           required>
-
   <input
           type="number"
           name="price"
           step="0.01"
           placeholder="Price"
           required>
-
   <input
           type="file"
           name="image"
           accept="image/*">
-
   <button
           class="normal-button"
           type="submit">
-
     Add Product
-
   </button>
-
 </form>
-
-
 </div>
-
 <div id="excel-form" style="display: none;">
-
   <h3>Import Products from Excel</h3>
-
   <p>
     Column A: Product Name<br>
     Column B: Price
   </p>
-
   <form action="/import"
         method="post"
         enctype="multipart/form-data">
-
     <input
             type="file"
             name="file"
             accept=".xlsx"
             required>
-
     <button
             class="normal-button"
             type="submit">
-
       Import Products
-
     </button>
-
   </form>
-
 </div>
-
 <hr>
 
 
-
-<!-- ======================= -->
-<!-- PRODUCTS -->
-<!-- ======================= -->
-
 <h2>Products</h2>
-
-
-<!-- Holds all of our product cards -->
 <div class="product-container">
-
-
-  <!--
-  Thymeleaf repeats this entire card once
-  for every Product object in our products list.
-  -->
   <div
           class="product-card"
           th:each="product : ${products}"
           th:id="'product-' + ${product.id}">
-
-
-    <!-- ======================= -->
-    <!-- PRODUCT IMAGE -->
-    <!-- ======================= -->
-
-    <!--
-    Only displays an image if the Product
-    actually has an image URL.
-    -->
     <img
             class="product-image"
-
             th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
-
             th:src="${product.imageUrl}"
-
             alt="Product Image">
-
-
-
-    <!-- ======================= -->
-    <!-- PRODUCT NAME -->
-    <!-- ======================= -->
-
     <h2
             class="product-name"
             th:text="${product.name}">
     </h2>
 
-
-
-    <!-- ======================= -->
-    <!-- PRODUCT PRICE -->
-    <!-- ======================= -->
-
     <p class="product-price">
-
       $<span
             th:text="${#numbers.formatDecimal(product.price, 1, 2)}">
             </span>
-
     </p>
-
-
-
-    <!-- ======================= -->
-    <!-- MINUS BUTTON -->
-    <!-- ======================= -->
 
 <form
         class="sale-form"
         th:action="@{/minus/{id}(id=${product.id})}"
         method="post"
         style="display:inline">
-
     <button
             class="sale-button"
             type="submit">
-
         −
-
     </button>
-
 </form>
-
-
-
-    <!-- ======================= -->
-    <!-- NUMBER SOLD -->
-    <!-- ======================= -->
-
     <span
             class="sold-count"
             th:text="${product.soldCount}">
         </span>
-
-
-
-    <!-- ======================= -->
-    <!-- PLUS BUTTON -->
-    <!-- ======================= -->
 
     <form
         class="sale-form"
@@ -374,212 +220,106 @@ to @PostMapping("/add") in ProductController.
       <button
               class="sale-button"
               type="submit">
-
         +
-
       </button>
-
     </form>
 
 
-
-    <!-- ======================= -->
-    <!-- PRODUCT REVENUE -->
-    <!-- ======================= -->
-
     <p class="product-revenue">
-
       Revenue:
-
       <strong>
-
         $<span
               th:text="${#numbers.formatDecimal(product.revenue, 1, 2)}">
                 </span>
-
       </strong>
-
     </p>
 
-
-
-    <!-- ======================= -->
-    <!-- EDIT PRODUCT -->
-    <!-- ======================= -->
-
+    
     <details>
-
       <summary>Edit Product</summary>
-
-
       <form
               th:action="@{/edit/{id}(id=${product.id})}"
               method="post">
-
-
-        <!-- Current product name -->
         <input
                 type="text"
                 name="name"
                 th:value="${product.name}"
                 required>
-
-
-        <!-- Current product price -->
         <input
                 type="number"
                 name="price"
                 step="0.01"
                 th:value="${product.price}"
                 required>
-
-
-        <!-- Current image URL -->
-        <input
-                type="text"
-                name="imageUrl"
-                th:value="${product.imageUrl}"
-                placeholder="Image URL">
-
-
         <br>
-
-
         <button
                 class="normal-button"
                 type="submit">
-
           Save Changes
-
         </button>
-
       </form>
 
 
 
-      <!-- DELETE PRODUCT -->
-
+    
       <form
               th:action="@{/delete/{id}(id=${product.id})}"
               method="post">
-
-
         <button
                 class="normal-button"
                 type="submit">
-
           Delete Product
-
         </button>
-
       </form>
-
-
     </details>
-
-
   </div>
-
 </div>
 
 
-
-<!-- ======================= -->
-<!-- SALES TOTALS -->
-<!-- ======================= -->
-
 <div class="totals">
-
   <h2>Sales Summary</h2>
-
-
-  <!--
-  Gives us a breakdown of how many
-  of EACH product were sold.
-  -->
   <div
           th:each="product : ${products}"
           class="individual-total">
-
-
     <p>
-
       <strong th:text="${product.name}"></strong>
-
       :
-
       <span th:text="${product.soldCount}"></span>
-
       sold
-
       —
-
       $<span
             th:text="${#numbers.formatDecimal(product.revenue, 1, 2)}">
             </span>
-
     </p>
-
-
   </div>
-
-
   <hr>
 
 
-  <!-- ======================= -->
-  <!-- OVERALL TOTALS -->
-  <!-- ======================= -->
-
-
+  
   <p class="grand-total">
-
     Total Items Sold:
-
     <span th:text="${totalItemsSold}"></span>
-
   </p>
-
-
   <p class="grand-total">
-
     Total Revenue:
-
     $<span
           th:text="${#numbers.formatDecimal(totalRevenue, 1, 2)}">
         </span>
-
   </p>
-
-
 </div>
-
-
-
 <script>
-
   function showManualForm() {
-
     document.getElementById("manual-form")
             .style.display = "block";
-
     document.getElementById("excel-form")
             .style.display = "none";
   }
-
-
   function showExcelForm() {
-
     document.getElementById("manual-form")
             .style.display = "none";
-
     document.getElementById("excel-form")
             .style.display = "block";
   }
-
 </script>
-
-
 </body>
-
 </html>
